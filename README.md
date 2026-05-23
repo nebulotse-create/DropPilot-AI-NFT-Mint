@@ -1,86 +1,124 @@
+<div align="center">
+
 # DropPilot AI
 
-> Your AI command center for drops, wallets, gas, and launch signals.
-> Never miss the next mint window.
+**Your AI command center for drops, wallets, gas, and launch signals.**
+**Never miss the next mint window.**
 
-**Live demo →** https://nebulotse-create.github.io/DropPilot-AI-Mint/
+[![Live demo](https://img.shields.io/badge/live-demo-00E0C7?style=flat-square)](https://nebulotse-create.github.io/DropPilot-AI-Mint/)
+[![Stage](https://img.shields.io/badge/stage-concept--preview-7C5CFF?style=flat-square)](#whats-mocked)
+[![Locales](https://img.shields.io/badge/locales-EN%20%C2%B7%20ID%20%C2%B7%20ZH-FFC857?style=flat-square)](#trilingual)
+[![License](https://img.shields.io/badge/license-MIT-2B3D55?style=flat-square)](./LICENSE)
 
-DropPilot is an AI co-pilot for NFT mint hunters and airdrop farmers. It watches drop queues across Monad, Abstract, Base, Zora, Ethereum, and Solana, scores risk in real time, and routes your watchlist through a multi-agent reasoning pipeline.
+[**→ Open the live dashboard**](https://nebulotse-create.github.io/DropPilot-AI-Mint/)
 
-This is a concept-stage submission for the Xiaomi MiMo Orbit grant program. All telemetry shown in the demo is illustrative mock data — not live RPC feeds.
+</div>
 
 ---
 
-## Why DropPilot
+> NFT mint windows close in seconds.
+> Airdrop checkers ship rugs daily.
+> Gas spikes burn whole sessions.
+>
+> The hunter's loop today: six tabs, three Discords, two block explorers, and a prayer.
 
-NFT mint windows close in seconds. Airdrop checkers ship rugs daily. Gas spikes burn whole sessions. The hunter's loop today is six tabs, three Discords, two block explorers, and a prayer.
+DropPilot collapses that loop into a single mission-control dashboard. Five autonomous agents do the grunt work — bytecode scans, holder distribution checks, LP locks, X chatter sentiment, eligibility cross-referencing — and surface everything as a single risk verdict per drop.
 
-DropPilot consolidates that loop into one mission-control dashboard with five autonomous agents doing the grunt work — contract bytecode scans, holder distribution checks, LP locks, X chatter sentiment, eligibility cross-referencing — and surfaces everything as a single risk verdict per drop.
+Built as a concept-stage submission for the **Xiaomi MiMo Orbit grant program**, May 2026.
 
-## Dashboard tour
+---
 
-The demo is a single-page mission control split into seven surfaces.
+## The dashboard, in 30 seconds
 
-### Mission control hero
+Open the live link and the page **is** the product. No marketing scroll above the fold — the hero is the panel.
 
-Live ticker rail across the top (per-chain gas, ETH/SOL spot), then three side-by-side panels:
+| Surface | What you see |
+|---|---|
+| **Live ticker** | Per-chain gas + ETH/SOL spot, pinned across the top |
+| **Chains tracked** | 8/8 surfaces with drop counts and gwei pulse |
+| **Upcoming queue** | 6 drops sorted by ETA with trace + action buttons |
+| **Wallet snapshot** | Allowlists, 7d mints, gas spent, flagged scams |
+| **Signal stream** | Aggregated chatter from X / OpenSea / Magic Eden / Zora |
 
-- **Chains tracked** — 8/8: Ethereum, Base, Monad, Abstract, Zora, Solana, OpenSea, Magic Eden
-- **Upcoming mint queue** — 6 drops sorted by ETA with trace + action buttons
-- **Wallet snapshot** — demo wallet, allowlist count, 7d mints, gas spent, flagged scams
+---
 
-A full-width signal stream (X / OpenSea / Magic Eden / Zora / scanner) sits below.
+## The AI surface
 
-### 01 · Coverage map
+Four interactive surfaces ship in v1 — none of them are decorative.
 
-Eight surfaces scanned every 6 seconds: Ethereum mempool, Base L2, Monad mainnet+testnet, Abstract zkSync, Zora creator paths, Solana cNFT + standard, OpenSea drops index, Magic Eden launchpad (SOL + ETH + Base).
+### 1 · Reasoning trace drawer
 
-### 02 · Agent operations
+Click any drop in the queue. A side panel slides in with the agent's step-by-step trace: which tool fired, what it returned, latency per step, final verdict. Three drops have hand-authored traces, three render from a template that adapts to the risk level. Every drop has a visible trace — no empty state.
 
-The AI core. Three panels plus a natural-language command bar.
+### 2 · Tool registry
 
-- **Agents** — 5 autonomous agents: Scanner, Forensic, Sentiment, Eligibility, Router. Each shows status, p50 latency, and a live log feed.
-- **Tool registry** — 12 tools, each clickable. Side drawer slides in with schema, sample I/O, last 5 invocations, and the agents that use it.
+Twelve tools, each clickable. Side drawer reveals schema, sample I/O JSON, and the last five invocations.
 
-  `scan_contract_bytecode` · `query_holder_dist` · `check_lp_lock` · `fetch_x_chatter` · `crossref_rug_db` · `estimate_gas` · `simulate_mint` · `lookup_ens` · `scan_solana_program` · `dispatch_alert` · `read_dompet_history` · `compute_eligibility`
-- **Cost-tier router** — 24h stats: 1,842 drops scored, 91.2% routed to cost-efficient tier, 8.8% escalated to flagship, $0.34 saved per scan, escalation reasons listed.
-- **NL command bar** — type `watch Base drops, risk < 30, AL only, alert TG` and the parser breaks it into chips: chain filter, risk threshold, stage filter, alert channel.
+| Scanner | Forensic | Sentiment | Eligibility | Router |
+|---|---|---|---|---|
+| `scan_contract_bytecode` | `check_lp_lock` | `fetch_x_chatter` | `read_dompet_history` | `dispatch_alert` |
+| `query_holder_dist` | `crossref_rug_db` | | `compute_eligibility` | `estimate_gas` |
+| `scan_solana_program` | `simulate_mint` | | `lookup_ens` | |
 
-Click any drop in the queue and a side drawer opens with the agent's step-by-step reasoning trace — which tool fired, what it returned, latency per step, final verdict. Three drops have scripted traces; the other three render from a template that adapts to the drop's risk level so every drop has a visible trace.
+### 3 · Cost-tier router
 
-### 03 · Risk engine
+24h routing telemetry rendered as a sidebar widget.
 
-Eight-factor weighted scoring, composite 0-100 with a verdict label (LOW / MED / HIGH / SCAM). Each factor is shown with its check status: contract verified, LP locked, holder distribution, deployer history, X sentiment, rug-DB cross-reference, gas simulation, eligibility match. Tabs swap between three sample drops (Pixie Pirates LOW 22, PowderEgg MED 58, FreeMintAlpha SCAM 94).
+| Metric | Value |
+|---|---|
+| Drops scored | 1,842 |
+| Cost-efficient tier | **91.2%** |
+| Flagship tier | 8.8% |
+| Saved per scan | $0.34 |
 
-### 04 · Wallet check
+A natural fit for **MiMo Token Plan tiered pricing** when the post-grant runtime ships.
 
-Paste a wallet, get a read-only eligibility report. Six cards render: allowlist matches, snapshot eligibility, gas-budget fit, contract reputation, peer activity, and recommended next mint. Read-only, zero signing.
+### 4 · Connect alerts mini-flow
 
-### 05 · Alert routing
+Click the header CTA. Side drawer opens with bot handle, Telegram chat ID input, and a working subscribe → success banner. The CTA is wired to a real flow, not a dead link.
 
-Webhook + push + browser. Three rails:
+### 5 · Natural-language command bar
 
-- **Telegram bot** — chat ID subscribe via the header CTA mini-drawer
-- **Discord webhook** — paste URL, get drop pings
-- **Browser push** — opt-in for in-tab alerts
+Type:
 
-### 06 · Roadmap
+```
+watch Base drops, risk < 30, AL only, alert TG
+```
 
-Concept · pre-MVP. The product map: command center → eligibility checker → autonomous mint pilot.
+The parser breaks it into four chips: chain · risk threshold · stage filter · alert channel.
 
-### Trilingual
+---
 
-EN / ID / ZH switcher, top-right. All copy, panel labels, drawer text, and the disclaimer footer are localized in three languages.
+## The other surfaces
+
+| Section | What it does |
+|---|---|
+| **01 · Coverage map** | 4×2 grid of chain coverage cards — Ethereum, Base, Monad, Abstract, Zora, Solana, OpenSea, Magic Eden |
+| **02 · Agent operations** | The AI core (above) |
+| **03 · Risk engine** | 8-factor weighted scoring with three swappable profiles: LOW 22 / MED 58 / SCAM 94 |
+| **04 · Wallet check** | Paste a wallet → 6 cards: allowlist, snapshot, gas-budget, contract reputation, peer activity, next mint |
+| **05 · Alert routing** | Telegram bot + Discord webhook + browser push, three preview rails |
+| **06 · Roadmap** | Concept → MVP → autonomous pilot |
+
+---
+
+## Trilingual
+
+EN · ID · 中文 switcher in the top-right. Every panel label, drawer heading, risk verdict, signal feed entry, and the disclaimer footer is authored line-by-line in three languages. Not machine-translated.
+
+---
 
 ## What's mocked
 
-Everything you see — gas prices, ETAs, risk scores, agent latencies, tool invocation counts, reasoning traces, eligibility cards — is frozen demo data. The footer disclaimer is explicit about this in all three languages.
+> Everything you see — gas prices, ETAs, risk scores, agent latencies, tool invocation counts, reasoning traces — is **frozen demo data**.
 
-The point of the build is to make the **shape** of the agent product real, not the data feed.
+The footer disclaimer is explicit about this in all three languages. The point of the build is to make the **shape** of the agent product real, not the data feed.
+
+---
 
 ## Tech
 
-Pure HTML, CSS, and vanilla JavaScript. No build step, no framework, no bundler. Renders on GitHub Pages out of the box.
+Pure HTML, CSS, and vanilla JavaScript. No build step. No framework. No bundler. Renders on GitHub Pages out of the box.
 
 ```
 .
@@ -94,17 +132,19 @@ Pure HTML, CSS, and vanilla JavaScript. No build step, no framework, no bundler.
 └── BUILD-PROCESS.md
 ```
 
-## Browser support
+Tested on Chromium 120+. Uses CSS `:has()` and modern grid — older browsers degrade gracefully but lose some panel collapse behavior.
 
-Tested on Chromium 120+. Uses CSS `:has()` and modern grid — older browsers will degrade gracefully but lose some panel collapse behavior.
+---
 
 ## Roadmap (post-grant)
 
-- Wire reasoning trace to real agent runtime via WebSocket
-- Replace ticker mock with free RPC reads (Alchemy/Ankr for ETH/Base/Zora/Abstract, native RPC for Monad and Solana)
-- Cost-tier router as a real model dispatch layer over MiMo's pricing tiers
+- Wire reasoning trace to a real agent runtime via WebSocket
+- Replace ticker mock with free RPC reads — Alchemy/Ankr for ETH/Base/Zora/Abstract, native RPC for Monad and Solana
+- Cost-tier router becomes a real model dispatch layer over MiMo's pricing tiers
 - Eligibility checker that actually reads on-chain history
 - Telegram bot + Discord webhook for the alerts CTA
+
+---
 
 ## License
 
@@ -112,4 +152,10 @@ MIT. See [LICENSE](./LICENSE).
 
 ---
 
-Built for the Xiaomi MiMo Orbit grant program, May 2026.
+<div align="center">
+
+**Built for the [Xiaomi MiMo Orbit](https://100t.xiaomimimo.com/) grant program · May 2026**
+
+[Live demo](https://nebulotse-create.github.io/DropPilot-AI-Mint/) · [Build process](./BUILD-PROCESS.md)
+
+</div>
