@@ -53,16 +53,6 @@ Pure HTML, CSS, and vanilla JavaScript. No build step, no framework, no bundler.
 └── BUILD-PROCESS.md
 ```
 
-## Run locally
-
-```bash
-cd droppilot-project
-python3 -m http.server 7992
-open http://localhost:7992
-```
-
-That's it. No `npm install`, no env vars.
-
 ## Browser support
 
 Tested on Chromium 120+. Uses CSS `:has()` and modern grid — older browsers will degrade gracefully but lose some panel collapse behavior.
