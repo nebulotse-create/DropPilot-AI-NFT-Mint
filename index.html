@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#06080F">
+<title>DropPilot AI — Command center for mints, wallets, gas, and launch signals</title>
+<meta name="description" content="Never miss the next mint window. DropPilot AI is the autonomous co-pilot for NFT hunters — multi-chain mint tracking, wallet eligibility, gas oracle, scam-link forensics, risk scoring, and Telegram/Discord alerts.">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="alternate icon" type="image/x-icon" href="assets/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="DropPilot AI — Mint command center">
+<meta property="og:description" content="AI co-pilot for drop hunters. Multi-chain mint tracking. Real-time gas. Wallet eligibility. Scam-link forensics. Telegram/Discord alerts.">
+<meta property="og:image" content="assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+
+<style>
+:root{
+  --bg:#06080F;
+  --bg-1:#0A0E1A;
+  --bg-2:#0F1626;
+  --bg-3:#141C30;
+  --line:rgba(120,150,210,0.10);
+  --line-strong:rgba(120,150,210,0.22);
+  --line-glow:rgba(0,255,200,0.20);
+  --ink:#E8ECF5;
+  --ink-soft:#A8B0C2;
+  --ink-mute:#5C657A;
+  --cyan:#00E0C7;
+  --cyan-deep:#00B8A4;
+  --green:#34D399;
+  --green-deep:#10B981;
+  --amber:#FBBF24;
+  --amber-deep:#F59E0B;
+  --red:#F87171;
+  --red-deep:#EF4444;
+  --violet:#8B5CF6;
+  --pink:#EC4899;
+  --max:1440px;
+  --r-xs:4px;
+  --r-sm:6px;
+  --r-md:10px;
+  --r-lg:14px;
+  --mono:'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  --sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+}
+
+body{
+  margin:0;font-family:var(--sans);
+  font-size:15px;line-height:1.55;
+  color:var(--ink);background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 1200px 600px at 20% -10%, rgba(0,224,199,0.06), transparent 60%),
+    radial-gradient(ellipse 800px 500px at 90% 10%, rgba(139,92,246,0.06), transparent 60%);
+  background-attachment:fixed;
+}
+
+.skip-link{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{left:16px;top:16px;width:auto;height:auto;background:var(--cyan);color:var(--bg);padding:10px 14px;border-radius:var(--r-sm);font-weight:700;z-index:100}
+
+/* ============================================
+   TICKER BAR (fixed top)
+   ============================================ */
+.ticker{
+  position:sticky;top:0;z-index:50;
+  background:rgba(6,8,15,0.95);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:12px;
+  overflow:hidden;
+  height:36px;
+  display:flex;align-items:center;
+}
+.ticker-track{
+  display:flex;align-items:center;gap:32px;
+  padding:0 24px;
+  white-space:nowrap;
+  animation:ticker 60s linear infinite;
+}
+@media (prefers-reduced-motion: reduce){.ticker-track{animation:none}}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft)}
+.ticker-item .lbl{color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.08em;font-size:10.5px}
+.ticker-item .v{color:var(--ink);font-weight:600}
+.ticker-item .pct{font-weight:600}
+.pct.up{color:var(--green)}
+.pct.dn{color:var(--red)}
+.dot-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(52,211,153,0.6);animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,0.6)}70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.dp-header{
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(10,14,26,0.7), rgba(6,8,15,0.4));
+  backdrop-filter:blur(10px);
+}
+.dp-header-inner{
+  width:100%;
+  padding:14px 24px;
+  display:flex;align-items:center;gap:24px;
+}
+.dp-brand{
+  display:inline-flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--ink);
+}
+.dp-brand-mark{
+  width:30px;height:30px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg, var(--cyan), var(--violet));
+  border-radius:var(--r-sm);
+  font-family:var(--mono);font-weight:800;
+  color:var(--bg);font-size:14px;
+}
+.dp-brand-name{font-weight:800;font-size:1rem;letter-spacing:-0.01em}
+.dp-brand-name span{color:var(--cyan)}
+
+.dp-nav{
+  display:flex;gap:6px;margin-left:auto;
+  font-size:13.5px;
+}
+.dp-nav a{
+  text-decoration:none;color:var(--ink-soft);
+  padding:8px 12px;border-radius:var(--r-sm);
+  transition:color .15s, background .15s;
+}
+.dp-nav a:hover{color:var(--ink);background:rgba(120,150,210,0.06)}
+.dp-nav a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.dp-lang{display:inline-flex;gap:2px;padding:3px;background:rgba(120,150,210,0.06);border-radius:var(--r-sm);border:1px solid var(--line)}
+.dp-lang button{
+  background:transparent;border:0;color:var(--ink-soft);
+  padding:5px 10px;font-size:11.5px;font-weight:600;
+  cursor:pointer;border-radius:4px;
+  font-family:var(--mono);letter-spacing:0.04em;
+}
+.dp-lang button[aria-pressed="true"]{background:var(--cyan);color:var(--bg)}
+
+.dp-cta{
+  background:var(--cyan);color:var(--bg);
+  padding:9px 16px;border-radius:var(--r-sm);
+  text-decoration:none;font-weight:700;font-size:13.5px;
+  border:1px solid var(--cyan);
+  display:inline-flex;align-items:center;gap:6px;
+  margin-left:32px;
+  transition:transform .15s, box-shadow .15s;
+}
+.dp-cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,224,199,0.25)}
+.dp-cta:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+@media (max-width: 900px){
+  .dp-nav{display:none}
+}
+
+/* ============================================
+   HERO = LIVE MISSION CONTROL DASHBOARD
+   ============================================ */
+.hero-shell{
+  max-width:var(--max);margin:0 auto;
+  padding:24px 24px 0;
+}
+.hero-headline{
+  display:grid;grid-template-columns:1fr auto;
+  gap:24px;align-items:end;
+  padding:24px 0 18px;
+  border-bottom:1px dashed var(--line);
+}
+.hero-headline h1{
+  margin:0;font-size:clamp(28px, 4vw, 44px);
+  font-weight:800;line-height:1.05;letter-spacing:-0.025em;
+}
+.hero-headline h1 .accent{
+  background:linear-gradient(120deg, var(--cyan) 30%, var(--violet) 90%);
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
+.hero-tag{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--cyan);margin:0 0 12px;
+}
+.hero-sub{
+  margin:6px 0 0;color:var(--ink-soft);
+  font-size:15px;max-width:620px;
+}
+.hero-status{
+  display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+  font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-mute);
+}
+.hero-status .live{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--green);font-weight:600;
+}
+.hero-status .ts{color:var(--ink-mute)}
+
+.dashboard{
+  display:grid;
+  grid-template-columns:240px 1fr 280px;
+  grid-template-areas:
+    "chains queue wallet"
+    "feed feed feed";
+  gap:14px;
+  padding:18px 0 36px;
+}
+.dashboard > .panel{align-self:stretch}
+
+@media (max-width: 1180px){
+  .dashboard{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "chains wallet"
+      "queue queue"
+      "feed feed";
+  }
+}
+@media (max-width: 720px){
+  .dashboard{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "chains"
+      "wallet"
+      "queue"
+      "feed";
+  }
+}
+
+.panel{
+  background:linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  position:relative;
+  overflow:hidden;
+}
+.panel::before{
+  content:"";position:absolute;left:0;right:0;top:0;
+  height:1px;background:linear-gradient(90deg, transparent, var(--line-glow), transparent);
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+}
+.panel-head h2, .panel-head h3{
+  margin:0;font-size:11.5px;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--ink);
+}
+.panel-head .meta{
+  font-size:10.5px;color:var(--ink-mute);
+  letter-spacing:0.06em;
+}
+.panel-body{padding:14px 16px}
+
+/* CHAIN RAIL (left) */
+.chain-panel{grid-area:chains}
+.chain-list{
+  display:flex;flex-direction:column;gap:6px;
+  max-height:520px;overflow-y:auto;
+}
+.chain-list::-webkit-scrollbar{width:6px}
+.chain-list::-webkit-scrollbar-track{background:transparent}
+.chain-list::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+.chain-row{
+  display:grid;grid-template-columns:24px 1fr auto;
+  align-items:center;gap:10px;
+  padding:8px 11px;border-radius:var(--r-sm);
+  background:rgba(120,150,210,0.03);
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:background .15s, border-color .15s;
+  font-size:12.5px;
+}
+.chain-row:hover{background:rgba(120,150,210,0.08);border-color:var(--line)}
+.chain-row[aria-pressed="true"]{
+  background:rgba(0,224,199,0.08);
+  border-color:rgba(0,224,199,0.3);
+}
+.chain-icon{
+  width:24px;height:24px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--mono);font-size:10px;font-weight:800;
+  color:#fff;
+}
+.chain-icon.eth{background:linear-gradient(135deg,#627EEA,#8FA4F0)}
+.chain-icon.base{background:linear-gradient(135deg,#0052FF,#3B7AFE)}
+.chain-icon.zora{background:linear-gradient(135deg,#000,#444)}
+.chain-icon.monad{background:linear-gradient(135deg,#7C3AED,#A855F7)}
+.chain-icon.abstract{background:linear-gradient(135deg,#00FF7F,#34D399);color:#000}
+.chain-icon.solana{background:linear-gradient(135deg,#9945FF,#14F195);color:#000}
+.chain-icon.os{background:linear-gradient(135deg,#2081E2,#1199FA)}
+.chain-icon.me{background:linear-gradient(135deg,#E42575,#FF6B9D)}
+.chain-name{font-weight:600;color:var(--ink);font-size:13px}
+.chain-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:0.04em}
+
+/* DROP QUEUE (center top) */
+.queue-panel{grid-area:queue}
+.queue-list{display:flex;flex-direction:column;gap:0}
+.drop-row{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) 72px 52px 130px 78px;
+  gap:10px;align-items:center;
+  padding:14px 8px 14px 14px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+  transition:background .15s;
+  position:relative;
+}
+.drop-row:last-child{border-bottom:0}
+.drop-row:hover{background:rgba(120,150,210,0.03)}
+.drop-row[data-active="true"]{background:rgba(0,224,199,0.04)}
+.drop-row[data-active="true"]::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--cyan);
+}
+.drop-thumb{
+  width:48px;height:48px;border-radius:var(--r-sm);
+  background:linear-gradient(135deg, var(--bg-3), var(--bg-2));
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  font-family:var(--mono);font-size:18px;font-weight:800;
+  color:var(--ink-soft);
+}
+.drop-info{min-width:0}
+.drop-name{
+  font-weight:700;color:var(--ink);font-size:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.drop-name .stage{
+  font-family:var(--mono);font-size:9.5px;
+  padding:2px 6px;border-radius:3px;
+  letter-spacing:0.06em;font-weight:700;text-transform:uppercase;
+}
+.drop-name .stage.al{background:rgba(0,224,199,0.16);color:var(--cyan)}
+.drop-name .stage.fcfs{background:rgba(251,191,36,0.16);color:var(--amber)}
+.drop-name .stage.public{background:rgba(139,92,246,0.16);color:var(--violet)}
+.drop-meta{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.04em;margin-top:4px;
+  display:flex;gap:14px;
+}
+.drop-meta .chain{color:var(--cyan)}
+.drop-meta .supply{color:var(--ink-soft)}
+.drop-countdown{
+  font-family:var(--mono);font-weight:700;
+  color:var(--ink);font-size:13px;
+  text-align:right;
+  display:flex;flex-direction:column;align-items:flex-end;gap:2px;
+}
+.drop-countdown .lbl{
+  font-size:9px;color:var(--ink-mute);
+  text-transform:uppercase;letter-spacing:0.1em;font-weight:500;
+}
+.drop-risk{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:10px;
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:700;
+  width:64px;
+}
+.drop-risk .ring{
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;
+  font-size:13px;font-weight:800;
+}
+.drop-risk[data-level="low"] .ring{background:rgba(52,211,153,0.14);color:var(--green);box-shadow:inset 0 0 0 2px rgba(52,211,153,0.3)}
+.drop-risk[data-level="med"] .ring{background:rgba(251,191,36,0.14);color:var(--amber);box-shadow:inset 0 0 0 2px rgba(251,191,36,0.3)}
+.drop-risk[data-level="hi"] .ring{background:rgba(248,113,113,0.14);color:var(--red);box-shadow:inset 0 0 0 2px rgba(248,113,113,0.3)}
+.drop-risk .lbl{color:var(--ink-mute);font-size:9px}
+
+.drop-action{
+  background:transparent;border:1px solid var(--line-strong);
+  color:var(--ink);padding:7px 8px;border-radius:var(--r-sm);
+  cursor:pointer;font-family:var(--mono);font-size:9.5px;font-weight:700;
+  letter-spacing:0.04em;text-transform:uppercase;
+  transition:background .15s, border-color .15s;
+  white-space:nowrap;
+  width:100%;
+}
+.drop-action:hover{background:var(--cyan);color:var(--bg);border-color:var(--cyan)}
+.drop-action:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* WALLET PANEL (right) */
+.wallet-panel{grid-area:wallet}
+.wallet-addr{
+  font-family:var(--mono);font-size:12px;
+  color:var(--ink-soft);
+  background:rgba(120,150,210,0.04);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;
+}
+.wallet-addr .blip{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px var(--green);
+}
+.wallet-stats{display:grid;gap:10px}
+.wallet-stat{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;border-radius:var(--r-sm);
+  background:rgba(120,150,210,0.03);
+  border:1px solid var(--line);
+}
+.wallet-stat .lbl{font-size:11px;color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono)}
+.wallet-stat .v{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)}
+.wallet-stat .v.green{color:var(--green)}
+.wallet-stat .v.amber{color:var(--amber)}
+
+.gas-gauge{
+  margin-top:14px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:14px;
+  text-align:center;
+}
+.gas-gauge .v{
+  font-family:var(--mono);font-size:30px;font-weight:800;
+  background:linear-gradient(120deg, var(--cyan), var(--violet));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1;
+}
+.gas-gauge .lbl{
+  font-size:10px;color:var(--ink-mute);text-transform:uppercase;
+  letter-spacing:0.14em;font-family:var(--mono);margin-top:6px;
+}
+.gas-bar{
+  margin-top:10px;height:5px;border-radius:3px;
+  background:rgba(120,150,210,0.1);overflow:hidden;
+}
+.gas-bar .fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--green), var(--amber), var(--red));
+  border-radius:3px;
+  transition:width .8s ease;
+}
+
+/* SIGNAL FEED (center bottom) */
+.feed-panel{grid-area:feed}
+.feed-list{
+  display:flex;flex-direction:column;gap:0;
+  max-height:300px;overflow-y:auto;
+}
+.feed-list::-webkit-scrollbar{width:6px}
+.feed-list::-webkit-scrollbar-track{background:transparent}
+.feed-list::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+.feed-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:12px;align-items:start;
+  padding:11px 16px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+.feed-row:last-child{border-bottom:0}
+.feed-tag{
+  font-family:var(--mono);font-size:9px;font-weight:800;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:3px 7px;border-radius:3px;
+  white-space:nowrap;
+  margin-top:2px;
+}
+.feed-tag.x{background:rgba(255,255,255,0.08);color:#fff}
+.feed-tag.os{background:rgba(32,129,226,0.16);color:#5BB0F5}
+.feed-tag.me{background:rgba(228,37,117,0.16);color:#FF6B9D}
+.feed-tag.zora{background:rgba(120,150,210,0.1);color:var(--ink-soft)}
+.feed-tag.scan{background:rgba(248,113,113,0.16);color:var(--red)}
+.feed-tag.tg{background:rgba(0,136,204,0.16);color:#36A8DC}
+.feed-text{color:var(--ink);min-width:0}
+.feed-text .actor{color:var(--cyan);font-weight:600}
+.feed-text .target{color:var(--violet);font-weight:600}
+.feed-time{
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);
+  white-space:nowrap;
+}
+
+/* ============================================
+   SECTIONS BELOW DASHBOARD
+   ============================================ */
+section.dp-section{
+  max-width:var(--max);margin:0 auto;
+  padding:64px 24px;
+}
+.section-head{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:end;gap:24px;margin-bottom:32px;
+  padding-bottom:18px;border-bottom:1px dashed var(--line);
+}
+.section-num{
+  font-family:var(--mono);font-size:60px;font-weight:900;
+  background:linear-gradient(180deg, var(--ink-soft) 0%, transparent 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:0.85;
+  opacity:0.4;
+  letter-spacing:-0.05em;
+}
+.section-title{
+  margin:0;font-size:clamp(22px, 3vw, 32px);
+  font-weight:800;letter-spacing:-0.02em;line-height:1.15;
+}
+.section-eyebrow{
+  font-family:var(--mono);font-size:10.5px;
+  color:var(--cyan);letter-spacing:0.18em;text-transform:uppercase;
+  margin-bottom:6px;
+}
+.section-meta{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.08em;text-transform:uppercase;
+}
+
+/* HOW IT WATCHES (chain coverage strip) */
+.coverage-grid{
+  display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:1px;
+  background:var(--line);border:1px solid var(--line);
+  border-radius:var(--r-md);overflow:hidden;
+}
+@media (max-width: 980px){.coverage-grid{grid-template-columns:repeat(2, minmax(0,1fr))}}
+@media (max-width: 520px){.coverage-grid{grid-template-columns:1fr}}
+.coverage-cell{
+  padding:18px;background:var(--bg-1);
+  display:flex;flex-direction:column;gap:10px;
+  position:relative;transition:background .2s;
+}
+.coverage-cell:hover{background:var(--bg-2)}
+.coverage-cell .top{display:flex;align-items:center;gap:10px}
+.coverage-cell .nm{font-weight:700;color:var(--ink);font-size:14px}
+.coverage-cell .stat{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.05em;
+}
+.coverage-cell .stat .v{color:var(--cyan);font-weight:700}
+.coverage-cell .live{
+  position:absolute;top:14px;right:14px;
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9.5px;color:var(--green);
+  letter-spacing:0.08em;text-transform:uppercase;font-weight:700;
+}
+
+/* RISK SCORE WIDGET */
+.risk-grid{
+  display:grid;grid-template-columns:340px 1fr;
+  gap:24px;align-items:start;
+}
+@media (max-width: 880px){.risk-grid{grid-template-columns:1fr}}
+.risk-gauge-wrap{
+  background:var(--bg-1);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:24px;text-align:center;
+}
+.risk-svg{width:240px;height:240px;margin:0 auto;display:block}
+.risk-score{
+  font-family:var(--mono);font-size:54px;font-weight:900;
+  margin-top:-150px;display:block;
+  background:linear-gradient(180deg, var(--cyan), var(--violet));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1;letter-spacing:-0.04em;
+  position:relative;z-index:2;pointer-events:none;
+}
+.risk-label{
+  margin-top:6px;
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.18em;text-transform:uppercase;
+}
+.risk-verdict{
+  display:inline-block;margin-top:18px;
+  padding:6px 14px;border-radius:99px;
+  font-family:var(--mono);font-size:11px;font-weight:800;
+  letter-spacing:0.14em;text-transform:uppercase;
+}
+.risk-verdict[data-level="low"]{background:rgba(52,211,153,0.16);color:var(--green);border:1px solid rgba(52,211,153,0.3)}
+.risk-verdict[data-level="med"]{background:rgba(251,191,36,0.16);color:var(--amber);border:1px solid rgba(251,191,36,0.3)}
+.risk-verdict[data-level="hi"]{background:rgba(248,113,113,0.16);color:var(--red);border:1px solid rgba(248,113,113,0.3)}
+
+.risk-breakdown{
+  background:var(--bg-1);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:24px;
+}
+.risk-target{
+  font-family:var(--mono);font-size:12px;color:var(--ink-mute);
+  letter-spacing:0.08em;
+  padding:10px 12px;background:rgba(120,150,210,0.04);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  display:flex;align-items:center;gap:10px;margin-bottom:18px;
+}
+.risk-target .v{color:var(--cyan);font-weight:700}
+.risk-factors{display:grid;gap:10px}
+.risk-factor{
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:10px;align-items:center;
+  padding:11px 12px;
+  background:rgba(120,150,210,0.03);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+}
+.risk-factor-bullet{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+.risk-factor-bullet.green{background:var(--green);box-shadow:0 0 8px var(--green)}
+.risk-factor-bullet.amber{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.risk-factor-bullet.red{background:var(--red);box-shadow:0 0 8px var(--red)}
+.risk-factor-text{font-size:13px;color:var(--ink-soft)}
+.risk-factor-text .k{color:var(--ink);font-weight:600}
+.risk-factor-score{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  color:var(--ink-mute);letter-spacing:0.04em;
+  white-space:nowrap;
+}
+.risk-factor-score.green{color:var(--green)}
+.risk-factor-score.amber{color:var(--amber)}
+.risk-factor-score.red{color:var(--red)}
+
+.risk-tabs{
+  display:flex;gap:6px;margin-top:20px;
+  border-top:1px solid var(--line);padding-top:16px;
+}
+.risk-tab{
+  background:transparent;border:1px solid var(--line);
+  color:var(--ink-soft);
+  padding:7px 12px;border-radius:var(--r-sm);
+  cursor:pointer;font-family:var(--mono);font-size:10.5px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;
+  transition:all .15s;
+}
+.risk-tab[aria-pressed="true"]{background:var(--cyan);color:var(--bg);border-color:var(--cyan)}
+.risk-tab:hover{color:var(--ink)}
+.risk-tab:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* WALLET ELIGIBILITY */
+.eligibility-shell{
+  background:var(--bg-1);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:24px;
+}
+.eligibility-row{
+  display:flex;gap:10px;flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.eligibility-input{
+  flex:1;min-width:280px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--line-strong);
+  color:var(--ink);
+  padding:12px 14px;border-radius:var(--r-sm);
+  font-family:var(--mono);font-size:13px;
+  outline:none;
+  transition:border-color .15s;
+}
+.eligibility-input:focus{border-color:var(--cyan)}
+.eligibility-input::placeholder{color:var(--ink-mute)}
+.eligibility-btn{
+  background:var(--cyan);color:var(--bg);
+  border:0;padding:12px 18px;border-radius:var(--r-sm);
+  font-weight:700;font-size:13px;cursor:pointer;
+  font-family:var(--sans);letter-spacing:0.02em;
+  transition:transform .15s, box-shadow .15s;
+}
+.eligibility-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,224,199,0.25)}
+.eligibility-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+.eligibility-results{
+  display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:10px;
+}
+@media (max-width: 880px){.eligibility-results{grid-template-columns:repeat(2, minmax(0,1fr))}}
+@media (max-width: 560px){.eligibility-results{grid-template-columns:1fr}}
+.eligibility-results:has(> .eligibility-empty){
+  grid-template-columns:1fr;
+}
+.eligibility-card{
+  background:rgba(120,150,210,0.04);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:14px;
+}
+.eligibility-card .top{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;
+}
+.eligibility-card .nm{font-weight:700;color:var(--ink);font-size:13px}
+.eligibility-card .badge{
+  font-family:var(--mono);font-size:9.5px;font-weight:800;
+  padding:3px 7px;border-radius:3px;
+  letter-spacing:0.06em;text-transform:uppercase;
+}
+.eligibility-card .badge.yes{background:rgba(52,211,153,0.18);color:var(--green)}
+.eligibility-card .badge.no{background:rgba(248,113,113,0.18);color:var(--red)}
+.eligibility-card .badge.maybe{background:rgba(251,191,36,0.18);color:var(--amber)}
+.eligibility-card .why{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.02em;line-height:1.5;
+}
+.eligibility-empty{
+  font-family:var(--mono);font-size:12px;color:var(--ink-mute);
+  letter-spacing:0.04em;text-align:center;padding:32px;
+}
+
+/* ALERT ROUTING */
+.alerts-grid{
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+  gap:14px;
+}
+.alert-card{
+  background:var(--bg-1);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:0;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.alert-card-head{
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg, rgba(120,150,210,0.04), transparent);
+}
+.alert-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:grid;place-items:center;
+  font-family:var(--mono);font-weight:800;font-size:14px;
+  color:#fff;
+}
+.alert-icon.tg{background:linear-gradient(135deg,#229ED9,#36A8DC)}
+.alert-icon.dc{background:linear-gradient(135deg,#5865F2,#7983F5)}
+.alert-icon.web{background:linear-gradient(135deg,var(--violet),var(--pink))}
+.alert-card .nm{font-weight:700;color:var(--ink);font-size:14px}
+.alert-card .sub{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:0.04em;margin-top:2px}
+.alert-mock{
+  padding:18px;flex:1;
+  font-family:var(--mono);font-size:12px;
+  color:var(--ink-soft);line-height:1.6;
+  background:rgba(0,0,0,0.25);
+}
+.alert-mock .badge{color:var(--cyan);font-weight:700}
+.alert-mock .stage{color:var(--amber)}
+.alert-mock .risk{color:var(--green)}
+.alert-mock .risk.hi{color:var(--red)}
+
+/* ROADMAP */
+.roadmap-rail{
+  display:grid;grid-template-columns:repeat(4, 1fr);
+  gap:14px;position:relative;
+}
+@media (max-width: 880px){.roadmap-rail{grid-template-columns:1fr 1fr}}
+@media (max-width: 480px){.roadmap-rail{grid-template-columns:1fr}}
+.rmap-cell{
+  background:var(--bg-1);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:18px;
+  position:relative;
+}
+.rmap-q{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  color:var(--cyan);letter-spacing:0.14em;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.rmap-m{
+  font-weight:700;color:var(--ink);font-size:15px;
+  margin-bottom:8px;line-height:1.3;
+}
+.rmap-t{
+  font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-mute);line-height:1.6;
+}
+
+/* FOOTER */
+.dp-footer{
+  border-top:1px solid var(--line);
+  background:var(--bg-1);
+  padding:36px 24px 32px;
+}
+.dp-footer-inner{
+  max-width:var(--max);margin:0 auto;
+  display:grid;grid-template-columns:1fr auto;
+  gap:24px;align-items:center;
+}
+@media (max-width: 720px){.dp-footer-inner{grid-template-columns:1fr;text-align:center}}
+.dp-footer h2{
+  margin:0;font-size:20px;font-weight:800;letter-spacing:-0.01em;
+}
+.dp-footer h2 .accent{
+  background:linear-gradient(120deg, var(--cyan), var(--violet));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.dp-footer .note{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.04em;margin-top:6px;
+}
+.dp-footer-meta{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.04em;
+  display:flex;flex-direction:column;gap:4px;
+}
+.dp-footer-meta a{color:var(--ink-soft);text-decoration:none}
+.dp-footer-meta a:hover{color:var(--cyan)}
+
+/* ============================================
+   AGENT OPERATIONS SECTION
+   ============================================ */
+.ops-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto auto;
+  grid-template-areas:
+    "agents tools"
+    "router router";
+  gap:14px;
+}
+@media (max-width: 1080px){
+  .ops-grid{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "agents"
+      "tools"
+      "router";
+  }
+}
+
+.ops-block{
+  background:var(--bg-1);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.ops-block::before{
+  content:"";position:absolute;left:0;right:0;top:0;
+  height:1px;background:linear-gradient(90deg, transparent, var(--line-glow), transparent);
+}
+.ops-block .panel-head{padding:14px 18px}
+
+.agents-block{grid-area:agents}
+.tools-block{grid-area:tools}
+.router-block{grid-area:router}
+
+.ops-list{display:flex;flex-direction:column}
+
+.agents-block .ops-list{display:flex;flex-direction:column;flex:1}
+.agent-row{
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) auto auto;
+  gap:14px;align-items:center;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.agent-row:last-child{border-bottom:0}
+.agent-mark{
+  width:36px;height:36px;border-radius:8px;
+  display:grid;place-items:center;
+  font-family:var(--mono);font-weight:800;font-size:11px;
+  color:var(--bg);
+  letter-spacing:0.04em;
+}
+.agent-info{min-width:0}
+.agent-name{font-weight:700;color:var(--ink);font-size:14px}
+.agent-role{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  margin-top:3px;letter-spacing:0.02em;line-height:1.4;
+}
+.agent-tier{
+  font-family:var(--mono);font-size:9.5px;font-weight:800;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:3px 8px;border-radius:3px;white-space:nowrap;
+}
+.agent-tier.cost{background:rgba(0,224,199,0.14);color:var(--cyan)}
+.agent-tier.flagship{background:rgba(236,72,153,0.16);color:var(--pink)}
+.agent-status{
+  display:flex;flex-direction:column;align-items:flex-end;gap:3px;
+  font-family:var(--mono);font-size:10px;
+  color:var(--ink-mute);letter-spacing:0.04em;
+}
+.agent-status .live{
+  display:inline-flex;align-items:center;gap:5px;
+  font-weight:700;
+}
+.agent-status .live.active{color:var(--green)}
+.agent-status .live.escalating{color:var(--amber)}
+.agent-status .live::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 6px currentColor;
+}
+
+.tools-list{
+  max-height:480px;overflow-y:auto;
+}
+.tools-list::-webkit-scrollbar{width:6px}
+.tools-list::-webkit-scrollbar-track{background:transparent}
+.tools-list::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+
+.tool-row{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 80px 80px;
+  gap:12px;align-items:center;
+  padding:11px 18px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+.tool-row:last-child{border-bottom:0}
+.tool-row:hover{background:rgba(120,150,210,0.03)}
+.tool-info{min-width:0}
+.tool-id{
+  font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--cyan);
+  display:block;
+}
+.tool-meta{
+  display:block;
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);
+  margin-top:3px;line-height:1.45;
+}
+.tool-meta .agent-pill{
+  color:var(--ink-soft);background:rgba(120,150,210,0.08);
+  padding:1px 6px;border-radius:3px;font-size:9.5px;
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:700;
+  margin-right:6px;
+}
+.tool-calls{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--ink);text-align:right;
+}
+.tool-calls .lbl{
+  display:block;font-size:9px;font-weight:500;
+  color:var(--ink-mute);letter-spacing:0.08em;
+  text-transform:uppercase;margin-top:2px;
+}
+.tool-ms{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--green);text-align:right;
+  min-width:60px;
+}
+.tool-ms .lbl{
+  display:block;font-size:9px;font-weight:500;
+  color:var(--ink-mute);letter-spacing:0.08em;
+  text-transform:uppercase;margin-top:2px;
+}
+
+.router-body{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:0;
+}
+@media (max-width: 880px){.router-body{grid-template-columns:1fr}}
+
+.router-cell{
+  padding:24px;
+  border-right:1px solid var(--line);
+}
+.router-cell:last-child{border-right:0}
+@media (max-width: 880px){
+  .router-cell{border-right:0;border-bottom:1px solid var(--line)}
+  .router-cell:last-child{border-bottom:0}
+}
+
+.router-headline{
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;
+}
+.router-big{
+  font-family:var(--mono);font-size:42px;font-weight:900;
+  background:linear-gradient(120deg, var(--cyan), var(--violet));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:-0.03em;line-height:1;
+}
+.router-sub{
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);
+  margin-top:8px;letter-spacing:0.04em;
+}
+.router-sub strong{color:var(--ink)}
+
+.router-bar{
+  display:flex;height:12px;border-radius:6px;overflow:hidden;
+  background:var(--line);
+  margin-top:10px;
+}
+.router-bar .seg.cost{background:linear-gradient(90deg, var(--cyan-deep), var(--cyan));flex-shrink:0}
+.router-bar .seg.flagship{background:linear-gradient(90deg, var(--violet), var(--pink));flex-shrink:0}
+.router-legend{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;
+  font-family:var(--mono);font-size:11px;
+}
+.router-legend-item{
+  display:flex;align-items:center;gap:8px;
+  color:var(--ink-soft);
+}
+.router-legend-item .dot{
+  width:8px;height:8px;border-radius:2px;flex-shrink:0;
+}
+.router-legend-item .dot.cost{background:var(--cyan)}
+.router-legend-item .dot.flagship{background:var(--pink)}
+.router-legend-item .v{color:var(--ink);font-weight:700;display:block;font-size:13px}
+.router-legend-item .l{color:var(--ink-mute);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+
+.router-reasons{
+  display:flex;flex-direction:column;gap:8px;margin-top:14px;
+}
+.router-reason{
+  display:grid;grid-template-columns:1fr auto;
+  gap:10px;align-items:center;
+  font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-soft);
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:rgba(120,150,210,0.03);
+}
+.router-reason .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:8px}
+.router-reason .n{color:var(--ink);font-weight:700;font-size:12px;font-family:var(--mono)}
+
+.cmd-shell{
+  margin:24px 0 0;
+  background:rgba(0,0,0,0.35);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:18px;
+}
+.cmd-head{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;color:var(--ink-mute);
+  letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;
+}
+.cmd-head .live::before{
+  content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);margin-right:6px;
+  box-shadow:0 0 6px var(--cyan);
+}
+.cmd-row{
+  display:flex;gap:10px;flex-wrap:wrap;
+  align-items:center;
+}
+.cmd-prompt{
+  font-family:var(--mono);font-weight:800;color:var(--cyan);font-size:14px;
+  flex-shrink:0;
+}
+.cmd-input{
+  flex:1;min-width:280px;
+  background:transparent;border:0;
+  color:var(--ink);
+  font-family:var(--mono);font-size:13px;
+  padding:10px 0;outline:none;
+  border-bottom:1px solid var(--line-strong);
+}
+.cmd-input:focus{border-bottom-color:var(--cyan)}
+.cmd-input::placeholder{color:var(--ink-mute)}
+.cmd-btn{
+  background:var(--cyan);color:var(--bg);
+  border:0;padding:10px 16px;border-radius:var(--r-sm);
+  font-weight:700;font-size:12.5px;cursor:pointer;
+  font-family:var(--mono);letter-spacing:0.04em;
+  transition:transform .15s, box-shadow .15s;
+}
+.cmd-btn:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(0,224,199,0.25)}
+.cmd-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+.cmd-output{
+  margin-top:14px;
+  padding:14px;border-radius:var(--r-sm);
+  background:rgba(0,224,199,0.04);
+  border:1px solid rgba(0,224,199,0.2);
+  font-family:var(--mono);font-size:12px;
+  color:var(--ink-soft);
+  display:none;
+}
+.cmd-output[data-show="true"]{display:block;animation:fadeUp .25s ease}
+.cmd-output .label{color:var(--cyan);font-weight:700;display:block;margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase;font-size:10px}
+.cmd-output .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cmd-output .chip{
+  background:rgba(120,150,210,0.1);
+  border:1px solid var(--line-strong);
+  padding:4px 9px;border-radius:99px;
+  font-size:11px;color:var(--ink);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.cmd-output .chip .k{color:var(--ink-mute);font-size:9.5px;text-transform:uppercase;letter-spacing:0.08em}
+.cmd-output .chip .v{color:var(--cyan);font-weight:700}
+.cmd-output .footer{
+  margin-top:10px;color:var(--green);font-weight:700;font-size:11.5px;
+  display:flex;align-items:center;gap:6px;
+}
+.cmd-output .footer::before{content:"✓";font-size:14px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ============================================
+   REASONING TRACE DRAWER
+   ============================================ */
+.trace-overlay{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(6,8,15,0.6);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.trace-overlay[data-open="true"]{opacity:1;pointer-events:auto}
+
+/* Tool drawer reuses trace-drawer chrome */
+.tool-overlay{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(6,8,15,0.6);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.tool-overlay[data-open="true"]{opacity:1;pointer-events:auto}
+.tool-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:100;
+  width:min(560px, 92vw);
+  background:var(--bg);
+  border-left:1px solid var(--line);
+  box-shadow:-24px 0 60px rgba(0,0,0,0.4);
+  transform:translateX(100%);
+  transition:transform .28s cubic-bezier(.2,.7,.2,1);
+  display:flex;flex-direction:column;
+  font-family:var(--mono);
+  overflow-y:auto;
+}
+.tool-drawer[data-open="true"]{transform:translateX(0)}
+@media (prefers-reduced-motion: reduce){
+  .tool-drawer{transition:none}
+}
+.tool-meta{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:12px;padding:16px 22px;
+  border-bottom:1px solid var(--line);
+  background:rgba(120,150,210,0.02);
+}
+.tool-meta-cell{
+  font-family:var(--mono);
+}
+.tool-meta-cell .v{font-size:18px;color:var(--ink);font-weight:800}
+.tool-meta-cell .l{font-size:9.5px;color:var(--ink-mute);letter-spacing:0.12em;text-transform:uppercase;margin-top:3px}
+.tool-section{
+  padding:18px 22px;
+  border-bottom:1px solid var(--line);
+}
+.tool-section:last-child{border-bottom:0}
+.tool-section h4{
+  font-family:var(--mono);font-size:10px;
+  color:var(--ink-mute);letter-spacing:0.14em;
+  text-transform:uppercase;font-weight:700;
+  margin:0 0 10px;
+}
+.tool-schema{
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;
+}
+.tool-schema-col{
+  background:rgba(120,150,210,0.04);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:12px;
+}
+.tool-schema-col .lbl{
+  font-size:9.5px;color:var(--cyan);
+  letter-spacing:0.12em;text-transform:uppercase;
+  font-weight:700;margin-bottom:6px;
+}
+.tool-schema-col ul{
+  list-style:none;padding:0;margin:0;
+  font-size:11.5px;color:var(--ink-soft);line-height:1.65;
+}
+.tool-schema-col li{margin:0}
+.tool-sample{
+  background:#0a0e1a;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  padding:12px;
+  font-family:var(--mono);font-size:11px;
+  color:var(--ink-soft);
+  white-space:pre-wrap;word-break:break-word;
+  line-height:1.55;
+}
+.tool-sample-row{margin-bottom:8px}
+.tool-sample-row:last-child{margin-bottom:0}
+.tool-sample-row .lbl{
+  display:inline-block;
+  font-size:9.5px;color:var(--violet);
+  letter-spacing:0.12em;text-transform:uppercase;
+  font-weight:700;margin-right:8px;
+}
+.tool-recent{display:flex;flex-direction:column;gap:6px}
+.tool-recent-row{
+  display:grid;grid-template-columns:1fr auto auto;
+  gap:10px;align-items:center;
+  padding:8px 12px;
+  background:rgba(120,150,210,0.03);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  font-size:11.5px;
+}
+.tool-recent-row .drop{color:var(--ink)}
+.tool-recent-row .ms{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute)}
+.tool-recent-row .res{
+  font-family:var(--mono);font-size:9px;font-weight:800;
+  letter-spacing:0.1em;padding:3px 7px;
+  border-radius:3px;
+}
+.tool-recent-row .res[data-r="PASS"],
+.tool-recent-row .res[data-r="OK"],
+.tool-recent-row .res[data-r="ELIGIBLE"]{background:rgba(52,211,153,0.15);color:var(--green)}
+.tool-recent-row .res[data-r="WARN"]{background:rgba(251,191,36,0.15);color:var(--amber)}
+.tool-recent-row .res[data-r="FAIL"],
+.tool-recent-row .res[data-r="BLOCKED"],
+.tool-recent-row .res[data-r="NOT_ELIGIBLE"]{background:rgba(248,113,113,0.15);color:var(--red)}
+.tool-usedby-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 9px;border-radius:3px;
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+}
+
+/* Connect alerts drawer */
+.cn-overlay{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(6,8,15,0.6);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.cn-overlay[data-open="true"]{opacity:1;pointer-events:auto}
+.cn-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:100;
+  width:min(440px, 92vw);
+  background:var(--bg);
+  border-left:1px solid var(--line);
+  box-shadow:-24px 0 60px rgba(0,0,0,0.4);
+  transform:translateX(100%);
+  transition:transform .28s cubic-bezier(.2,.7,.2,1);
+  display:flex;flex-direction:column;
+  font-family:var(--mono);
+}
+.cn-drawer[data-open="true"]{transform:translateX(0)}
+@media (prefers-reduced-motion: reduce){
+  .cn-drawer{transition:none}
+}
+.cn-body{
+  padding:22px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.cn-desc{
+  font-family:var(--sans);font-size:13px;color:var(--ink-soft);
+  line-height:1.55;margin:0;
+}
+.cn-bot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;
+  background:rgba(0,224,199,0.06);
+  border:1px solid rgba(0,224,199,0.2);
+  border-radius:var(--r-sm);
+}
+.cn-bot-handle{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--cyan);letter-spacing:0.02em;
+}
+.cn-bot-copy{
+  background:transparent;border:1px solid rgba(0,224,199,0.3);
+  color:var(--cyan);padding:6px 10px;border-radius:var(--r-sm);
+  cursor:pointer;font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:all .15s;
+}
+.cn-bot-copy:hover{background:var(--cyan);color:var(--bg)}
+.cn-label{
+  font-family:var(--mono);font-size:9.5px;
+  color:var(--ink-mute);letter-spacing:0.14em;
+  text-transform:uppercase;font-weight:700;
+}
+.cn-input{
+  width:100%;
+  background:#0a0e1a;
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-sm);
+  padding:11px 14px;
+  color:var(--ink);font-family:var(--mono);font-size:13px;
+  outline:none;transition:border-color .15s;
+}
+.cn-input:focus{border-color:var(--cyan)}
+.cn-submit{
+  background:var(--cyan);color:var(--bg);
+  border:0;padding:11px 16px;border-radius:var(--r-sm);
+  cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:800;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:transform .15s, box-shadow .15s;
+}
+.cn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,224,199,0.25)}
+.cn-status{
+  padding:11px 14px;border-radius:var(--r-sm);
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;
+}
+.cn-status[data-state="success"]{
+  background:rgba(52,211,153,0.1);
+  border:1px solid rgba(52,211,153,0.25);
+  color:var(--green);
+}
+.cn-status[data-state="info"]{
+  background:rgba(120,150,210,0.06);
+  border:1px solid var(--line);
+  color:var(--ink-soft);
+}
+
+/* Tool row clickable cue */
+.tool-row{cursor:pointer}
+.tool-row:hover{background:rgba(0,224,199,0.04)}
+
+.trace-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:100;
+  width:min(620px, 92vw);
+  background:var(--bg);
+  border-left:1px solid var(--line);
+  box-shadow:-24px 0 60px rgba(0,0,0,0.4);
+  transform:translateX(100%);
+  transition:transform .28s cubic-bezier(.2,.7,.2,1);
+  display:flex;flex-direction:column;
+  font-family:var(--mono);
+}
+.trace-drawer[data-open="true"]{transform:translateX(0)}
+@media (prefers-reduced-motion: reduce){
+  .trace-drawer{transition:none}
+}
+
+.trace-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(0,224,199,0.05), transparent);
+}
+.trace-title{
+  font-family:var(--sans);font-weight:800;font-size:16px;
+  color:var(--ink);margin:0;
+  letter-spacing:-0.01em;
+}
+.trace-tag{
+  font-size:10px;color:var(--cyan);
+  letter-spacing:0.14em;text-transform:uppercase;
+  font-weight:700;margin-bottom:4px;
+}
+.trace-close{
+  background:transparent;border:1px solid var(--line-strong);
+  color:var(--ink-soft);
+  width:32px;height:32px;border-radius:var(--r-sm);
+  display:grid;place-items:center;cursor:pointer;
+  transition:all .15s;
+}
+.trace-close:hover{color:var(--ink);border-color:var(--ink-mute)}
+.trace-close:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.trace-stats{
+  display:flex;gap:0;
+  padding:14px 22px;
+  border-bottom:1px solid var(--line);
+  background:rgba(0,0,0,0.2);
+}
+.trace-stat{
+  flex:1;padding:0 12px;border-right:1px solid var(--line);
+}
+.trace-stat:first-child{padding-left:0}
+.trace-stat:last-child{border-right:0;padding-right:0}
+.trace-stat .v{
+  font-family:var(--mono);font-weight:800;font-size:18px;color:var(--cyan);
+  letter-spacing:-0.02em;
+}
+.trace-stat .l{
+  font-family:var(--mono);font-size:9.5px;color:var(--ink-mute);
+  letter-spacing:0.1em;text-transform:uppercase;
+  margin-top:3px;
+}
+
+.trace-body{
+  flex:1;overflow-y:auto;
+  padding:18px 22px;
+}
+.trace-body::-webkit-scrollbar{width:6px}
+.trace-body::-webkit-scrollbar-track{background:transparent}
+.trace-body::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+
+.trace-empty{
+  font-family:var(--mono);font-size:13px;color:var(--ink-mute);
+  text-align:center;padding:40px 20px;
+  letter-spacing:0.04em;
+}
+
+.trace-step{
+  position:relative;
+  padding:14px 0 14px 28px;
+  border-left:1px solid var(--line);
+  margin-left:6px;
+  opacity:0;
+  animation:traceIn .35s ease forwards;
+}
+.trace-step::before{
+  content:"";position:absolute;left:-6px;top:18px;
+  width:11px;height:11px;border-radius:50%;
+  background:var(--bg);
+  border:2px solid var(--cyan);
+}
+.trace-step[data-result="FAIL"]::before{border-color:var(--red)}
+.trace-step[data-result="WARN"]::before{border-color:var(--amber)}
+.trace-step[data-result="ELIGIBLE"]::before{border-color:var(--green)}
+.trace-step[data-result="NOT_ELIGIBLE"]::before{border-color:var(--amber)}
+.trace-step[data-result="BLOCKED"]::before{border-color:var(--red)}
+.trace-step[data-result="OK"]::before{border-color:var(--cyan)}
+@keyframes traceIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+
+.trace-step-head{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:11.5px;
+}
+.trace-step-agent{
+  font-family:var(--mono);font-weight:800;font-size:9.5px;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:3px;
+  color:var(--bg);
+}
+.trace-step-tool{
+  color:var(--cyan);font-family:var(--mono);font-size:11px;font-weight:700;
+}
+.trace-step-ms{
+  color:var(--ink-mute);font-size:10.5px;font-family:var(--mono);
+}
+.trace-step-result{
+  font-family:var(--mono);font-size:9.5px;font-weight:800;
+  letter-spacing:0.08em;
+  margin-left:auto;
+  padding:2px 7px;border-radius:3px;
+}
+.trace-step-result[data-r="PASS"], .trace-step-result[data-r="OK"], .trace-step-result[data-r="ELIGIBLE"]{background:rgba(52,211,153,0.16);color:var(--green)}
+.trace-step-result[data-r="WARN"], .trace-step-result[data-r="NOT_ELIGIBLE"]{background:rgba(251,191,36,0.18);color:var(--amber)}
+.trace-step-result[data-r="FAIL"], .trace-step-result[data-r="BLOCKED"]{background:rgba(248,113,113,0.18);color:var(--red)}
+
+.trace-step-desc{
+  font-family:var(--sans);
+  color:var(--ink-soft);font-size:13px;margin-top:6px;line-height:1.5;
+}
+
+.trace-summary{
+  margin-top:18px;
+  padding:14px;border-radius:var(--r-sm);
+  background:rgba(139,92,246,0.06);
+  border:1px solid rgba(139,92,246,0.2);
+}
+.trace-summary-label{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  color:var(--violet);letter-spacing:0.14em;text-transform:uppercase;
+  margin-bottom:6px;
+}
+.trace-summary-text{
+  font-family:var(--sans);
+  font-size:13.5px;color:var(--ink);line-height:1.5;
+}
+
+.drop-trace-btn{
+  background:transparent;border:1px solid transparent;
+  color:var(--ink-mute);padding:5px 8px;border-radius:var(--r-sm);
+  cursor:pointer;font-family:var(--mono);font-size:9.5px;font-weight:700;
+  letter-spacing:0.04em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:5px;
+  white-space:nowrap;
+  justify-content:center;
+  transition:all .15s;
+}
+.drop-trace-btn:hover{color:var(--cyan);border-color:rgba(0,224,199,0.3);background:rgba(0,224,199,0.05)}
+.drop-trace-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.drop-trace-btn::before{content:"⟁";font-size:10px}
+</style>
+</head>
+<body>
+
+<a href="#dashboard" class="skip-link" data-i18n="skip.toContent">Skip to dashboard</a>
+
+<!-- HEADER -->
+<header class="dp-header">
+  <div class="dp-header-inner">
+    <a class="dp-brand" href="#" aria-label="DropPilot home">
+      <span class="dp-brand-mark" aria-hidden="true">DP</span>
+      <span class="dp-brand-name">Drop<span>Pilot</span></span>
+    </a>
+    <nav class="dp-nav" aria-label="Primary">
+      <a href="#dashboard" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="#coverage" data-i18n="nav.coverage">Coverage</a>
+      <a href="#ops" data-i18n="nav.ops">Agent ops</a>
+      <a href="#risk" data-i18n="nav.risk">Risk engine</a>
+      <a href="#eligibility" data-i18n="nav.eligibility">Wallet check</a>
+      <a href="#alerts" data-i18n="nav.alerts">Alerts</a>
+      <a href="#roadmap" data-i18n="nav.roadmap">Roadmap</a>
+    </nav>
+    <div class="dp-lang" role="group" aria-label="Language">
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="id" aria-pressed="false">ID</button>
+      <button data-lang="zh" aria-pressed="false">中文</button>
+    </div>
+    <a class="dp-cta" href="#alerts" data-i18n="nav.cta">Connect alerts</a>
+  </div>
+</header>
+
+<!-- LIVE TICKER -->
+<div class="ticker" role="region" aria-label="Live market ticker">
+  <div class="ticker-track" id="ticker-track">
+    <span class="ticker-item"><span class="dot-live"></span><span class="lbl" data-i18n="ticker.live">Live</span></span>
+    <span class="ticker-item"><span class="lbl">ETH</span><span class="v">$3,824</span><span class="pct up">+1.84%</span></span>
+    <span class="ticker-item"><span class="lbl">SOL</span><span class="v">$182.41</span><span class="pct up">+3.21%</span></span>
+    <span class="ticker-item"><span class="lbl">GAS</span><span class="v">14 gwei</span><span class="pct dn">-22%</span></span>
+    <span class="ticker-item"><span class="lbl">BASE</span><span class="v">0.018 gwei</span></span>
+    <span class="ticker-item"><span class="lbl">MONAD</span><span class="v">0.51 gwei</span></span>
+    <span class="ticker-item"><span class="lbl" data-i18n="ticker.tracking">Tracking</span><span class="v">3,184 drops</span></span>
+    <span class="ticker-item"><span class="lbl" data-i18n="ticker.next">Next mint</span><span class="v">in 14m 22s</span></span>
+    <span class="ticker-item"><span class="lbl" data-i18n="ticker.alerts">Alerts shipped</span><span class="v">847</span><span class="pct up">/24h</span></span>
+
+    <span class="ticker-item"><span class="dot-live"></span><span class="lbl">Live</span></span>
+    <span class="ticker-item"><span class="lbl">ETH</span><span class="v">$3,824</span><span class="pct up">+1.84%</span></span>
+    <span class="ticker-item"><span class="lbl">SOL</span><span class="v">$182.41</span><span class="pct up">+3.21%</span></span>
+    <span class="ticker-item"><span class="lbl">GAS</span><span class="v">14 gwei</span><span class="pct dn">-22%</span></span>
+    <span class="ticker-item"><span class="lbl">BASE</span><span class="v">0.018 gwei</span></span>
+    <span class="ticker-item"><span class="lbl">MONAD</span><span class="v">0.51 gwei</span></span>
+    <span class="ticker-item"><span class="lbl">Tracking</span><span class="v">3,184 drops</span></span>
+    <span class="ticker-item"><span class="lbl">Next mint</span><span class="v">in 14m 22s</span></span>
+    <span class="ticker-item"><span class="lbl">Alerts shipped</span><span class="v">847</span><span class="pct up">/24h</span></span>
+  </div>
+</div>
+
+<main>
+
+  <!-- HERO = DASHBOARD -->
+  <div class="hero-shell" id="dashboard">
+    <div class="hero-headline">
+      <div>
+        <p class="hero-tag" data-i18n="hero.tag">DROP COMMAND CENTER · v0.1 PREVIEW</p>
+        <h1>
+          <span data-i18n="hero.title.l1">Never miss the next</span>
+          <span class="accent" data-i18n="hero.title.l2">mint window.</span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero.sub">Autonomous co-pilot for drop hunters. Multi-chain mint tracking, gas oracle, wallet eligibility, scam-link forensics, and risk scoring — wired to Telegram and Discord so you stop refreshing OpenSea at 3 a.m.</p>
+      </div>
+      <div class="hero-status" aria-live="polite">
+        <span class="live"><span class="dot-live"></span><span data-i18n="hero.status.label">Mission control online</span></span>
+        <span class="ts" id="hero-ts">—</span>
+        <span data-i18n="hero.status.region">us-east · 14ms · 99.97%</span>
+      </div>
+    </div>
+
+    <div class="dashboard">
+
+      <!-- CHAIN RAIL -->
+      <section class="panel chain-panel" aria-labelledby="chains-h">
+        <div class="panel-head">
+          <h2 id="chains-h" data-i18n="panel.chains">Chains tracked</h2>
+          <span class="meta">8 / 8</span>
+        </div>
+        <div class="panel-body">
+          <div class="chain-list" role="group" aria-label="Chain filter">
+            <button class="chain-row" type="button" data-chain="ethereum" aria-pressed="true">
+              <span class="chain-icon eth" aria-hidden="true">Ξ</span>
+              <span><span class="chain-name">Ethereum</span><br><span class="chain-meta">14 gwei · 184 drops</span></span>
+              <span class="chain-meta">L1</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="base" aria-pressed="true">
+              <span class="chain-icon base" aria-hidden="true">B</span>
+              <span><span class="chain-name">Base</span><br><span class="chain-meta">0.018 gwei · 412 drops</span></span>
+              <span class="chain-meta">L2</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="monad" aria-pressed="true">
+              <span class="chain-icon monad" aria-hidden="true">M</span>
+              <span><span class="chain-name">Monad</span><br><span class="chain-meta">0.51 gwei · 89 drops</span></span>
+              <span class="chain-meta">L1</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="abstract" aria-pressed="true">
+              <span class="chain-icon abstract" aria-hidden="true">A</span>
+              <span><span class="chain-name">Abstract</span><br><span class="chain-meta">0.04 gwei · 67 drops</span></span>
+              <span class="chain-meta">L2</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="zora" aria-pressed="true">
+              <span class="chain-icon zora" aria-hidden="true">Z</span>
+              <span><span class="chain-name">Zora</span><br><span class="chain-meta">0.012 gwei · 226 drops</span></span>
+              <span class="chain-meta">L2</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="solana" aria-pressed="true">
+              <span class="chain-icon solana" aria-hidden="true">S</span>
+              <span><span class="chain-name">Solana</span><br><span class="chain-meta">5k lamports · 318 mints</span></span>
+              <span class="chain-meta">L1</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="opensea" aria-pressed="true">
+              <span class="chain-icon os" aria-hidden="true">O</span>
+              <span><span class="chain-name">OpenSea</span><br><span class="chain-meta" data-i18n="chains.os.meta">Drops index · all chains</span></span>
+              <span class="chain-meta">SRC</span>
+            </button>
+            <button class="chain-row" type="button" data-chain="magiceden" aria-pressed="true">
+              <span class="chain-icon me" aria-hidden="true">ME</span>
+              <span><span class="chain-name">Magic Eden</span><br><span class="chain-meta" data-i18n="chains.me.meta">SOL · ETH · Base</span></span>
+              <span class="chain-meta">SRC</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- DROP QUEUE -->
+      <section class="panel queue-panel" aria-labelledby="queue-h">
+        <div class="panel-head">
+          <h2 id="queue-h" data-i18n="panel.queue">Upcoming mint queue</h2>
+          <span class="meta" data-i18n="panel.queue.meta">Sorted by ETA · auto-refresh 6s</span>
+        </div>
+        <div class="queue-list" id="queue-list">
+          <!-- drops injected via JS -->
+        </div>
+      </section>
+
+      <!-- WALLET / GAS PANEL -->
+      <section class="panel wallet-panel" aria-labelledby="wallet-h">
+        <div class="panel-head">
+          <h2 id="wallet-h" data-i18n="panel.wallet">Wallet snapshot</h2>
+          <span class="meta">Demo</span>
+        </div>
+        <div class="panel-body">
+          <div class="wallet-addr">
+            <span class="blip" aria-hidden="true"></span>
+            <span>0x1f3a…7eC9</span>
+          </div>
+          <div class="wallet-stats">
+            <div class="wallet-stat">
+              <span class="lbl" data-i18n="wallet.al">Allowlists</span>
+              <span class="v green">7</span>
+            </div>
+            <div class="wallet-stat">
+              <span class="lbl" data-i18n="wallet.minted">Minted (7d)</span>
+              <span class="v">12</span>
+            </div>
+            <div class="wallet-stat">
+              <span class="lbl" data-i18n="wallet.gas">Gas spent (7d)</span>
+              <span class="v amber">0.084 ETH</span>
+            </div>
+            <div class="wallet-stat">
+              <span class="lbl" data-i18n="wallet.flagged">Flagged scams</span>
+              <span class="v green">0</span>
+            </div>
+          </div>
+          <div class="gas-gauge">
+            <div class="v" id="gas-v">14</div>
+            <div class="lbl" data-i18n="wallet.gas.label">Mainnet gwei · safe to mint</div>
+            <div class="gas-bar"><div class="fill" id="gas-fill" style="width:18%"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGNAL FEED -->
+      <section class="panel feed-panel" aria-labelledby="feed-h">
+        <div class="panel-head">
+          <h2 id="feed-h" data-i18n="panel.feed">Signal stream</h2>
+          <span class="meta" data-i18n="panel.feed.meta">X · OpenSea · Magic Eden · Zora · scanner</span>
+        </div>
+        <div class="feed-list" id="feed-list" aria-live="polite">
+          <!-- feed rows injected via JS -->
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- COVERAGE -->
+  <section class="dp-section" id="coverage" aria-labelledby="coverage-h">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="coverage.eyebrow">Coverage map</p>
+        <h2 class="section-title" id="coverage-h" data-i18n="coverage.title">Eight surfaces. One pilot.</h2>
+      </div>
+      <span class="section-meta" data-i18n="coverage.meta">scanned every 6 seconds</span>
+    </div>
+    <div class="coverage-grid">
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon eth">Ξ</span><span class="nm">Ethereum</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.eth.s1">Mempool watch · <span class="v">14ms</span> from broadcast</span>
+        <span class="stat" data-i18n="coverage.eth.s2">Top 200 collections · public + AL</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon base">B</span><span class="nm">Base</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.base.s1">Coinbase L2 · <span class="v">412</span> drops/wk</span>
+        <span class="stat" data-i18n="coverage.base.s2">Zora + Highlight + native</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon monad">M</span><span class="nm">Monad</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.monad.s1">Testnet + mainnet · <span class="v">10k tps</span></span>
+        <span class="stat" data-i18n="coverage.monad.s2">Native + 3rd-party launchpads</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon abstract">A</span><span class="nm">Abstract</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.abstract.s1">zkSync L2 · <span class="v">consumer-first</span></span>
+        <span class="stat" data-i18n="coverage.abstract.s2">Pengu portal + native drops</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon zora">Z</span><span class="nm">Zora</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.zora.s1">Creator-first · <span class="v">226</span> drops/day</span>
+        <span class="stat" data-i18n="coverage.zora.s2">1155 + creator coin paths</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon solana">S</span><span class="nm">Solana</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.solana.s1">cNFT + standard · <span class="v">318</span> mints/day</span>
+        <span class="stat" data-i18n="coverage.solana.s2">Tensor + ME + Launchpad</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon os">O</span><span class="nm">OpenSea</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.os.s1">Index · <span class="v">all chains</span> aggregated</span>
+        <span class="stat" data-i18n="coverage.os.s2">Drops calendar · stage detection</span>
+      </div>
+      <div class="coverage-cell">
+        <div class="top"><span class="chain-icon me">ME</span><span class="nm">Magic Eden</span></div>
+        <span class="live"><span class="dot-live"></span>Live</span>
+        <span class="stat" data-i18n="coverage.me.s1">SOL + ETH + Base · <span class="v">launchpad</span></span>
+        <span class="stat" data-i18n="coverage.me.s2">AL + FCFS + public stages</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- AGENT OPERATIONS -->
+  <section class="dp-section" id="ops" aria-labelledby="ops-h">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="ops.eyebrow">Agent operations</p>
+        <h2 class="section-title" id="ops-h" data-i18n="ops.title">Five agents. Twelve tools. One pilot.</h2>
+      </div>
+      <span class="section-meta" data-i18n="ops.meta">live runtime telemetry</span>
+    </div>
+
+    <div class="ops-grid">
+      <!-- AGENTS PANEL -->
+      <section class="ops-block agents-block" aria-labelledby="agents-h">
+        <div class="panel-head">
+          <h3 id="agents-h" data-i18n="ops.section.agents">Agents</h3>
+          <span class="meta">5</span>
+        </div>
+        <div class="ops-list" id="agents-list">
+          <!-- injected by app.js -->
+        </div>
+      </section>
+
+      <!-- TOOLS PANEL -->
+      <section class="ops-block tools-block" aria-labelledby="tools-h">
+        <div class="panel-head">
+          <h3 id="tools-h" data-i18n="ops.section.tools">Tool registry</h3>
+          <span class="meta">12</span>
+        </div>
+        <div class="tools-list" id="tools-list">
+          <!-- injected by app.js -->
+        </div>
+      </section>
+
+      <!-- COST-TIER ROUTER -->
+      <section class="ops-block router-block" aria-labelledby="router-h">
+        <div class="panel-head">
+          <h3 id="router-h" data-i18n="ops.section.router">Cost-tier router</h3>
+          <span class="meta">last 24h</span>
+        </div>
+        <div class="router-body">
+          <div class="router-cell">
+            <div class="router-headline" data-i18n="ops.router.coverage">Drops scored 24h</div>
+            <div class="router-big" id="router-coverage">1,842</div>
+            <div class="router-sub"><strong id="router-savings">$214 saved last 24h</strong></div>
+          </div>
+          <div class="router-cell">
+            <div class="router-headline" data-i18n="ops.router.split">Routing split</div>
+            <div class="router-bar" aria-hidden="true">
+              <div class="seg cost" id="router-bar-cost" style="width:91.2%"></div>
+              <div class="seg flagship" id="router-bar-flag" style="width:8.8%"></div>
+            </div>
+            <div class="router-legend">
+              <div class="router-legend-item">
+                <span class="dot cost" aria-hidden="true"></span>
+                <div>
+                  <span class="v" id="router-cost-v">91.2%</span>
+                  <span class="l" data-i18n="ops.tier.cost">cost-efficient tier</span>
+                </div>
+              </div>
+              <div class="router-legend-item">
+                <span class="dot flagship" aria-hidden="true"></span>
+                <div>
+                  <span class="v" id="router-flag-v">8.8%</span>
+                  <span class="l" data-i18n="ops.tier.flagship">flagship tier</span>
+                </div>
+              </div>
+            </div>
+            <div class="router-sub" style="margin-top:14px"><span data-i18n="ops.router.cost.label">Avg cost / scan</span> · <strong id="router-cost-cents">$0.0016</strong></div>
+          </div>
+          <div class="router-cell">
+            <div class="router-headline" data-i18n="ops.router.flagship.reasons">Flagship tier escalation reasons</div>
+            <div class="router-reasons" id="router-reasons">
+              <!-- injected by app.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- NATURAL-LANGUAGE COMMAND BAR -->
+    <div class="cmd-shell" role="region" aria-labelledby="cmd-h">
+      <div class="cmd-head">
+        <span class="live" data-i18n="trace.cmd.title">Natural-language command</span>
+      </div>
+      <div class="cmd-row">
+        <span class="cmd-prompt" id="cmd-h" aria-hidden="true">&gt;_</span>
+        <input type="text" class="cmd-input" id="cmd-input" data-i18n-placeholder="trace.cmd.placeholder" placeholder="watch Base drops, risk < 30, AL only, alert TG">
+        <button class="cmd-btn" id="cmd-btn" type="button" data-i18n="trace.cmd.btn">Parse command</button>
+      </div>
+      <div class="cmd-output" id="cmd-output" aria-live="polite">
+        <span class="label" data-i18n="trace.cmd.parsed">Parsed by Router Agent →</span>
+        <div class="chips" id="cmd-chips"></div>
+        <div class="footer" data-i18n="trace.cmd.added">Active alert added · agent watching now</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISK ENGINE -->
+  <section class="dp-section" id="risk" aria-labelledby="risk-h">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="risk.eyebrow">Risk engine</p>
+        <h2 class="section-title" id="risk-h" data-i18n="risk.title">Score every drop before you ape.</h2>
+      </div>
+      <span class="section-meta" data-i18n="risk.meta">eight-factor weighted</span>
+    </div>
+    <div class="risk-grid">
+      <div class="risk-gauge-wrap">
+        <svg class="risk-svg" viewBox="0 0 240 240" aria-hidden="true">
+          <defs>
+            <linearGradient id="rgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00E0C7"/>
+              <stop offset="100%" stop-color="#8B5CF6"/>
+            </linearGradient>
+          </defs>
+          <circle cx="120" cy="120" r="100" fill="none" stroke="rgba(120,150,210,0.1)" stroke-width="14"/>
+          <circle id="risk-arc" cx="120" cy="120" r="100" fill="none"
+                  stroke="url(#rgrad)" stroke-width="14"
+                  stroke-linecap="round"
+                  stroke-dasharray="628.3"
+                  stroke-dashoffset="220"
+                  transform="rotate(-90 120 120)"/>
+        </svg>
+        <span class="risk-score" id="risk-score">65</span>
+        <div class="risk-label" data-i18n="risk.label">Composite risk score</div>
+        <span class="risk-verdict" id="risk-verdict" data-level="med" data-i18n="risk.verdict.med">Medium · review before mint</span>
+      </div>
+      <div class="risk-breakdown">
+        <div class="risk-target">
+          <span data-i18n="risk.target.label">SCANNING</span>
+          <span class="v" id="risk-target-name">Pixie Pirates · Base · 4h to AL</span>
+        </div>
+        <div class="risk-factors" id="risk-factors">
+          <!-- injected via JS -->
+        </div>
+        <div class="risk-tabs" role="tablist">
+          <button class="risk-tab" type="button" data-target="trust" aria-pressed="true" data-i18n="risk.tab.trust">Pixie Pirates</button>
+          <button class="risk-tab" type="button" data-target="risky" aria-pressed="false" data-i18n="risk.tab.risky">PowderEgg WL</button>
+          <button class="risk-tab" type="button" data-target="scam" aria-pressed="false" data-i18n="risk.tab.scam">FreeMintAlpha</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WALLET ELIGIBILITY -->
+  <section class="dp-section" id="eligibility" aria-labelledby="elig-h">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="elig.eyebrow">Wallet check</p>
+        <h2 class="section-title" id="elig-h" data-i18n="elig.title">Paste a wallet. See what it can mint.</h2>
+      </div>
+      <span class="section-meta" data-i18n="elig.meta">read-only · zero signing</span>
+    </div>
+    <div class="eligibility-shell">
+      <div class="eligibility-row">
+        <input type="text" class="eligibility-input" id="elig-input" data-i18n-placeholder="elig.placeholder" placeholder="0x… or vitalik.eth">
+        <button class="eligibility-btn" id="elig-btn" data-i18n="elig.btn">Check eligibility</button>
+      </div>
+      <div class="eligibility-results" id="elig-results">
+        <div class="eligibility-empty" data-i18n="elig.empty">Paste any wallet to see allowlist hits across the queue.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTS -->
+  <section class="dp-section" id="alerts" aria-labelledby="alerts-h">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="alerts.eyebrow">Alert routing</p>
+        <h2 class="section-title" id="alerts-h" data-i18n="alerts.title">Wired to where you already are.</h2>
+      </div>
+      <span class="section-meta" data-i18n="alerts.meta">webhook + push + browser</span>
+    </div>
+    <div class="alerts-grid">
+      <article class="alert-card">
+        <div class="alert-card-head">
+          <span class="alert-icon tg" aria-hidden="true">TG</span>
+          <div>
+            <div class="nm" data-i18n="alerts.tg.nm">Telegram</div>
+            <div class="sub" data-i18n="alerts.tg.sub">Bot · group · channel</div>
+          </div>
+        </div>
+        <div class="alert-mock">
+<span class="badge">[DropPilot]</span> 🟢 <strong>Pixie Pirates</strong>
+<span class="stage">→ AL stage opens in 14m 22s</span>
+chain: Base · supply 5,000 · price 0.0042 ETH
+risk: <span class="risk">22 / 100 · LOW</span>
+your wallet: <strong>eligible · slot #318</strong>
+<a>open mint →</a>
+        </div>
+      </article>
+      <article class="alert-card">
+        <div class="alert-card-head">
+          <span class="alert-icon dc" aria-hidden="true">DC</span>
+          <div>
+            <div class="nm" data-i18n="alerts.dc.nm">Discord</div>
+            <div class="sub" data-i18n="alerts.dc.sub">Webhook · embed · role ping</div>
+          </div>
+        </div>
+        <div class="alert-mock">
+<span class="badge">@here · DropPilot</span> 🟡 <strong>PowderEgg WL</strong>
+<span class="stage">FCFS open in 6m 03s</span>
+chain: Zora · supply 2,200 · price free + gas
+risk: <span class="risk" style="color:var(--amber)">58 / 100 · MEDIUM</span>
+flag: 7-day-old contract · LP not locked
+gas estimate: 0.018 gwei · ~$0.41
+        </div>
+      </article>
+      <article class="alert-card">
+        <div class="alert-card-head">
+          <span class="alert-icon web" aria-hidden="true">WB</span>
+          <div>
+            <div class="nm" data-i18n="alerts.web.nm">Browser push</div>
+            <div class="sub" data-i18n="alerts.web.sub">PWA · sound profile per stage</div>
+          </div>
+        </div>
+        <div class="alert-mock">
+<span class="badge" style="color:var(--red)">[BLOCKED]</span> 🔴 <strong>FreeMintAlpha</strong>
+mint link: claim-free-eth[.]xyz
+risk: <span class="risk hi">94 / 100 · SCAM</span>
+flag: setApprovalForAll on connect
+flag: drainer pattern matched 3 known
+recommended: <strong>do not connect wallet</strong>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="dp-section" id="roadmap" aria-labelledby="rmap-h">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <div>
+        <p class="section-eyebrow" data-i18n="rmap.eyebrow">Roadmap</p>
+        <h2 class="section-title" id="rmap-h" data-i18n="rmap.title">From command center to autonomous pilot.</h2>
+      </div>
+      <span class="section-meta" data-i18n="rmap.meta">concept · pre-MVP</span>
+    </div>
+    <div class="roadmap-rail">
+      <article class="rmap-cell">
+        <div class="rmap-q">Q3 2026</div>
+        <div class="rmap-m" data-i18n="rmap.q1.m">MVP + 200 alpha hunters</div>
+        <div class="rmap-t" data-i18n="rmap.q1.t">8-chain coverage · TG + DC alerts · risk score v1 · wallet eligibility · scam-link forensics. Median alert latency &lt; 4s from broadcast.</div>
+      </article>
+      <article class="rmap-cell">
+        <div class="rmap-q">Q4 2026</div>
+        <div class="rmap-m" data-i18n="rmap.q2.m">Auto-mint guardrails</div>
+        <div class="rmap-t" data-i18n="rmap.q2.t">Hunter sets max-gas + max-mint-price + risk threshold. DropPilot signs only when all guardrails pass. Hard-coded wallet allowlist + opt-in only.</div>
+      </article>
+      <article class="rmap-cell">
+        <div class="rmap-q">Q1 2027</div>
+        <div class="rmap-m" data-i18n="rmap.q3.m">Public open beta + 5,000 hunters</div>
+        <div class="rmap-t" data-i18n="rmap.q3.t">Browser extension · mobile PWA · paid tier for unlimited alerts and auto-mint. Free tier always covers 8 chains and 5 active alerts.</div>
+      </article>
+      <article class="rmap-cell">
+        <div class="rmap-q">Q2 2027</div>
+        <div class="rmap-m" data-i18n="rmap.q4.m">Marketplace partner integrations</div>
+        <div class="rmap-t" data-i18n="rmap.q4.t">Native widgets in OpenSea / Magic Eden / Zora. Verified DropPilot risk score appears next to mint button before user signs.</div>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="dp-footer">
+  <div class="dp-footer-inner">
+    <div>
+      <h2><span class="accent" data-i18n="footer.tag.l1">Drop</span><span data-i18n="footer.tag.l2">Pilot</span><span data-i18n="footer.tag.l3"> — your AI co-pilot for mints, wallets, gas, and launch signals.</span></h2>
+      <p class="note" data-i18n="footer.note">Concept-stage artifact. MVP runtime — live mempool watch and on-chain risk scoring — targeted Q3 2026.</p>
+      <p class="note" data-i18n="footer.demonote" style="margin-top:8px;opacity:0.65">All gas prices, market quotes, drop ETAs, and risk scores shown are illustrative demo data — not live RPC feeds.</p>
+    </div>
+    <div class="dp-footer-meta">
+      <span data-i18n="footer.rights">© 2026 DropPilot contributors · MIT licensed</span>
+      <a href="#" data-i18n="footer.repo">View on GitHub</a>
+      <span data-i18n="footer.disclaimer">No financial advice · do your own research</span>
+    </div>
+  </div>
+</footer>
+
+<!-- REASONING TRACE DRAWER -->
+<div class="trace-overlay" data-role="trace-overlay" data-open="false" aria-hidden="true"></div>
+<aside class="trace-drawer" id="trace-drawer" data-open="false" role="dialog" aria-modal="true" aria-labelledby="trace-title" aria-hidden="true">
+  <div class="trace-head">
+    <div>
+      <div class="trace-tag" data-i18n="trace.btn.label">Trace AI reasoning</div>
+      <h3 class="trace-title" id="trace-title">—</h3>
+    </div>
+    <button class="trace-close" type="button" data-action="trace-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <line x1="6" y1="6" x2="18" y2="18"/>
+        <line x1="6" y1="18" x2="18" y2="6"/>
+      </svg>
+    </button>
+  </div>
+  <div class="trace-stats" id="trace-stats" hidden>
+    <div class="trace-stat">
+      <div class="v" id="trace-stat-steps">—</div>
+      <div class="l" data-i18n="trace.steps">steps</div>
+    </div>
+    <div class="trace-stat">
+      <div class="v" id="trace-stat-tools">—</div>
+      <div class="l" data-i18n="trace.tools">tools called</div>
+    </div>
+    <div class="trace-stat">
+      <div class="v" id="trace-stat-ms">—</div>
+      <div class="l" data-i18n="trace.totalMs">total ms</div>
+    </div>
+  </div>
+  <div class="trace-body" id="trace-body">
+    <div class="trace-empty" data-i18n="trace.empty">Click any drop in the queue to see the agent reasoning trace.</div>
+  </div>
+</aside>
+
+<!-- TOOL DETAIL DRAWER -->
+<div class="tool-overlay" data-role="tool-overlay" data-open="false" aria-hidden="true"></div>
+<aside class="tool-drawer" id="tool-drawer" data-open="false" role="dialog" aria-modal="true" aria-labelledby="tool-title" aria-hidden="true">
+  <div class="trace-head">
+    <div>
+      <div class="trace-tag" data-i18n="tool.drawer.eyebrow">Tool detail</div>
+      <h3 class="trace-title" id="tool-title">—</h3>
+    </div>
+    <button class="trace-close" type="button" data-action="tool-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <line x1="6" y1="6" x2="18" y2="18"/>
+        <line x1="6" y1="18" x2="18" y2="6"/>
+      </svg>
+    </button>
+  </div>
+  <div class="tool-meta" id="tool-meta"></div>
+  <div class="trace-body" id="tool-body"></div>
+</aside>
+
+<!-- CONNECT ALERTS DRAWER -->
+<div class="cn-overlay" data-role="cn-overlay" data-open="false" aria-hidden="true"></div>
+<aside class="cn-drawer" id="cn-drawer" data-open="false" role="dialog" aria-modal="true" aria-labelledby="cn-title" aria-hidden="true">
+  <div class="trace-head">
+    <div>
+      <div class="trace-tag" data-i18n="cn.drawer.eyebrow">Connect alerts</div>
+      <h3 class="trace-title" id="cn-title" data-i18n="cn.drawer.title">Wire your channel</h3>
+    </div>
+    <button class="trace-close" type="button" data-action="cn-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <line x1="6" y1="6" x2="18" y2="18"/>
+        <line x1="6" y1="18" x2="18" y2="6"/>
+      </svg>
+    </button>
+  </div>
+  <div class="cn-body">
+    <p class="cn-desc" data-i18n="cn.drawer.desc">Pair the Telegram bot to receive risk-scored drop alerts. Concept demo — the live bot ships at MVP.</p>
+    <div class="cn-bot">
+      <div class="cn-bot-handle" data-i18n="cn.drawer.bothandle">@DropPilotAlertsBot</div>
+      <button class="cn-bot-copy" type="button" data-action="cn-copy" data-i18n="cn.drawer.copy">Copy bot handle</button>
+    </div>
+    <label class="cn-label" data-i18n="cn.drawer.label" for="cn-input">Telegram chat ID</label>
+    <input class="cn-input" id="cn-input" type="text" inputmode="numeric" data-i18n-attr="placeholder|cn.drawer.placeholder" placeholder="123456789" />
+    <button class="cn-submit" type="button" data-action="cn-submit" data-i18n="cn.drawer.subscribe">Subscribe</button>
+    <div class="cn-status" id="cn-status" data-state="idle" hidden></div>
+  </div>
+</aside>
+
+<script src="data.js?v=8"></script>
+<script src="i18n.js?v=8"></script>
+<script src="app.js?v=8"></script>
+
+</body>
+</html>
