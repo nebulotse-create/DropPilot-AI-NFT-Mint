@@ -5,12 +5,12 @@
 **Your AI command center for drops, wallets, gas, and launch signals.**
 **Never miss the next mint window.**
 
-[![Live demo](https://img.shields.io/badge/live-demo-00E0C7?style=flat-square)](https://nebulotse-create.github.io/DropPilot-AI-Mint/)
+[![Live demo](https://img.shields.io/badge/live-demo-00E0C7?style=flat-square)](https://nebulotse-create.github.io/DropPilot-AI-NFT-Mint/)
 [![Stage](https://img.shields.io/badge/stage-concept--preview-7C5CFF?style=flat-square)](#whats-mocked)
 [![Locales](https://img.shields.io/badge/locales-EN%20%C2%B7%20ID%20%C2%B7%20ZH-FFC857?style=flat-square)](#trilingual)
 [![License](https://img.shields.io/badge/license-MIT-2B3D55?style=flat-square)](./LICENSE)
 
-[**→ Open the live dashboard**](https://nebulotse-create.github.io/DropPilot-AI-Mint/)
+[**→ Open the live dashboard**](https://nebulotse-create.github.io/DropPilot-AI-NFT-Mint/)
 
 </div>
 
@@ -156,6 +156,6 @@ MIT. See [LICENSE](./LICENSE).
 
 **Built for the [Xiaomi MiMo Orbit](https://100t.xiaomimimo.com/) grant program · May 2026**
 
-[Live demo](https://nebulotse-create.github.io/DropPilot-AI-Mint/) · [Build process](./BUILD-PROCESS.md)
+[Live demo](https://nebulotse-create.github.io/DropPilot-AI-NFT-Mint/) · [Build process](./BUILD-PROCESS.md)
 
 </div>
